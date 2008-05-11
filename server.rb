@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
 # Base server code by raggi
+# http://github.com/raggi/github_post_receive_server/
 
 require 'rubygems'
 require 'rack'
 require 'json'
 require 'pp'
+require 'socket'
 
 class App
   def self.rude_comment
@@ -20,8 +22,10 @@ class App
     
     return rude_comment if req.get? or payload.nil?
     
-    payload = JSON.parse( payload )
-    puts payload.pretty_inspect
+    # Ping the Reby EventMachine listening for events
+    socket = TCPSocket.new( '127.0.0.1', 9005 )
+    socket.puts payload
+    socket.close
     
     res = Rack::Response.new 
     res.write "Thanks! You beautiful soul you."
