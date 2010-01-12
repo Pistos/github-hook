@@ -11,28 +11,31 @@ require 'socket'
 
 class App
   def self.rude_comment
-    res = Rack::Response.new 
-    res.write "Be gone, foul creature of the Internet." 
+    res = Rack::Response.new
+    res.write "Be gone, foul creature of the Internet."
     res.finish
   end
-  
+
   def self.call( env )
     req = Rack::Request.new( env )
     payload = req.POST["payload"]
     puts payload
-    
+
     return rude_comment if req.get? or payload.nil?
-    
+
     # Ping the Reby EventMachine listening for events
     socket = TCPSocket.new( '127.0.0.1', 9005 )
     socket.puts payload
     socket.close
-    
-    res = Rack::Response.new 
+
+    res = Rack::Response.new
     res.write "Thanks! You beautiful soul, you."
     res.finish
   end
 
 end
 
-Rack::Handler::Mongrel.run App, :Port => 8005
+File.open( 'server.pid', 'w' ) { |f| f.print Process.pid }
+$0 = "github-hook-server"
+
+Rack::Handler::Thin.run App, :Port => 8005
